@@ -7,7 +7,7 @@ import { immer } from "zustand/middleware/immer";
 export interface Store {
   lists: ShoppingList[];
   currentListId: string | null;
-  addListEntry: (newEntry: Entry) => void;
+  addListEntry: (newEntry: Omit<Entry, "id">) => void;
 }
 
 const getNewList = (): ShoppingList => ({ id: generateGuid(), name: "", entries: [] });
@@ -27,7 +27,7 @@ export const useStore = create<Store>()(
         addListEntry: (entry) =>
           set((state) => {
             const list = getCurrentList(state);
-            list.entries.push(entry);
+            list.entries.push({ id: generateGuid(), ...entry });
 
             // In case getCurrentList() created a list for us
             state.currentListId = list.id;
@@ -39,7 +39,7 @@ export const useStore = create<Store>()(
           }),
       })),
       {
-        name: "shoppinglist-storage4", // name of the item in the storage (must be unique)
+        name: "shoppinglist-storage5", // name of the item in the storage (must be unique)
       }
     )
   )

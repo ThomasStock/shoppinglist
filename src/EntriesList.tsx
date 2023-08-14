@@ -10,8 +10,8 @@ export const EntriesList = () => {
 
   return (
     <ul>
-      {entries.map(({ name }) => (
-        <li>{name}</li>
+      {entries.map(({ id, name }) => (
+        <li key={id}>{name}</li>
       ))}
     </ul>
   );
