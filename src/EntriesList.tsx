@@ -1,18 +1,32 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { getCurrentList, useStore } from "./useStore";
 import ContentEditable from "react-contenteditable";
+import ReactDOMServer from "react-dom/server";
 
 export const EntriesList = () => {
   const { entries } = useStore(getCurrentList);
-  const [text, setText] = useState("");
   const divref = useRef<HTMLDivElement>(null);
+  const htmlRef = useRef<string | null>(null);
+
+  const setRef = (jsx: JSX.Element | JSX.Element[] | null) => {
+    if (jsx == null) {
+      htmlRef.current = null;
+    } else {
+      htmlRef.current = ReactDOMServer.renderToStaticMarkup(<>{jsx}</>);
+    }
+  };
 
   useEffect(() => {
     if (!entries.length) {
-      setText("");
-      return;
+      setRef(null);
+    } else {
+      entries.map((_) => (
+        <>
+          <p className="inline space-x-5">{_.name}</p>
+          <br />
+        </>
+      ));
     }
-    setText(entries.map((_) => `<p style="display: inline">${_.name}</p>`).join("</br>"));
   }, [entries]);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -23,7 +37,7 @@ export const EntriesList = () => {
     });
     console.log(JSON.stringify(rects[2], null, 1));
     const rec = rects[1];
-    const divrect = divref.current!.getBoundingClientRect();
+    // const divrect = divref.current!.getBoundingClientRect();
     const mousex = e.nativeEvent.pageX;
     const mousey = e.nativeEvent.pageY;
     console.log(mousex - rec.right, mousey >= rec.top && mousey <= rec.bottom);
@@ -35,12 +49,12 @@ export const EntriesList = () => {
       innerRef={divref}
       className="editable"
       tagName="pre"
-      html={text} // innerHTML of the editable div
+      html={htmlRef.current ?? ""} // innerHTML of the editable div
       onClick={(e) => handleClick(e)}
-      onMouseMove={(e) => {
+      onMouseMove={() => {
         //console.log({ clientx: e.clientX, pagex: e.pageX, ox: e.screenX });
       }}
-      onChange={(e) => setText(e.target.value)} // handle innerHTML change
+      onChange={(e) => (htmlRef.current = e.target.value)} // handle innerHTML change
     />
   );
 };
